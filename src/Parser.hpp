@@ -2,8 +2,8 @@
 #define PARSER_HPP
 
 #include <cctype>
-#include <cmath>
 #include <format>
+#include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -29,43 +29,36 @@
 /// 4. exponential
 /// 5. primary
 class Parser final {
-
   /// <expression> ::= <assignment-expression> | <additive-expression>
   static std::unique_ptr<AST::Expression> expression(std::istringstream &s) {
-    std::unique_ptr<AST::Expression> lhs = additive(s);
+    // In the case of <assignment-expression> will be an <identifier>, otherwise
+    // may be an <additive-expression>.
+    std::unique_ptr<AST::Expression> left = additive(s); // descend
 
-    while (true) {
-      s >> std::ws;
-      const char op = s.peek();
-      if (op == '=') {
-        s.get(); // consume '='
-        s >> std::ws;
-        lhs = std::make_unique<AST::AssignmentExpression>(std::move(lhs),
-                                                          expression(s));
-        break; // Assignment is right-associative and has the lowest precedence
-      }
+    s >> std::ws;
+    const char op = s.peek();
+    if (op == '=') {
+      s.get(); // consume '='
 
-      if (op != '+' && op != '-') {
-        break;
-      }
-
-      s.get(); // consume op
-      s >> std::ws;
-      lhs = additive(s);
+      // Assignment is right-associative, so we recurse on the right side
+      left = std::make_unique<AST::AssignmentExpression>(std::move(left),
+                                                         expression(s));
     }
+
+    // Everything legal has already been parsed, what's left is illegal
     if (s.peek() != std::char_traits<char>::eof()) {
-      std::string temp, remainder;
-      while (s >> temp) {
-        remainder += temp + ' ';
-      }
-      remainder.erase(remainder.size() - 1);
+      std::string leftover;
+      std::getline(s, leftover);
       throw SyntaxError(
-          std::format("Expected end of expression but found '{}'", remainder));
+          std::format("Expected end of expression but found '{}'", leftover));
     }
-    return lhs;
+
+    return left;
   }
 
-  /// <expression> "+" <expression> | <expression> "-" <expression>
+  /// <additive-expression> ::= <multiplicative-expression>
+  ///   | <additive-expression> "+" <multiplicative-expression>
+  ///   | <additive-expression> "-" <multiplicative-expression>
   static std::unique_ptr<AST::Expression> additive(std::istringstream &s) {
     std::unique_ptr<AST::Expression> left = multiplicative(s);
     while (true) {
@@ -85,7 +78,9 @@ class Parser final {
     }
   }
 
-  /// <expression> "*" <expression> | <expression> "/" <expression>
+  /// <multiplicative-expression> ::= <exponential-expression>
+  ///   | <multiplicative-expression> "*" <exponential-expression>
+  ///   | <multiplicative-expression> "-" <exponential-expression>
   static std::unique_ptr<AST::Expression>
   multiplicative(std::istringstream &s) {
     std::unique_ptr<AST::Expression> left = exponential(s);
@@ -106,30 +101,30 @@ class Parser final {
     }
   }
 
+  /// <exponential-expression> ::= <primary-expression>
+  ///   | <primary-expression> "^" <exponential-expression>
   static std::unique_ptr<AST::Expression> exponential(std::istringstream &s) {
-    // exponentiation is right-associative
-    std::unique_ptr<AST::Expression> left = primary(s); // maybe Constant
-    while (true) {
-      s >> std::ws;
-      const char op = s.peek();
-      if (op == '^') {
-        s.get(); // consume '^'
-        left = std::make_unique<AST::ExponentialExpression>(std::move(left),
-                                                            exponential(s));
-      } else {
-        break;
-      }
+    std::unique_ptr<AST::Expression> left = primary(s);
+    s >> std::ws;
+    const char op = s.peek();
+    if (op == '^') {
+      s.get(); // consume '^'
+      // right-associativity happens here, with recursion on the right op
+      left = std::make_unique<AST::ExponentialExpression>(std::move(left),
+                                                          exponential(s));
     }
     return left;
   }
 
+  /// <primary-expression> ::= <number> | <identifier>
+  ///   | "(" <additive-expression> ")" | <unary-expression>
   static std::unique_ptr<AST::Expression> primary(std::istringstream &s) {
     s >> std::ws;
-    char c = s.peek();
+    const char c = s.peek();
 
     if (c == '(') {
-      s.get(); // consume '('
-      std::unique_ptr<AST::Expression> inner = additive(s);
+      s.get();
+      std::unique_ptr<AST::Expression> inner = additive(s); // up again
       s >> std::ws;
       if (s.get() != ')') {
         throw SyntaxError("')' expected");
@@ -139,29 +134,33 @@ class Parser final {
 
     // unary operators
     if (c == '+' || c == '-') {
-      const int op = s.get();
-      std::unique_ptr<AST::Expression> exp = primary(s);
-      if (op == '+') {
-        return std::make_unique<AST::PlusExpression>(std::move(exp));
+      if (s.get() == '+') {
+        return std::make_unique<AST::PlusExpression>(primary(s));
       }
-      return std::make_unique<AST::MinusExpression>(std::move(exp));
+      return std::make_unique<AST::MinusExpression>(primary(s));
     }
 
-    c = s.peek();
     if (std::isdigit(c) || c == '.') {
       if (double value; s >> value) {
         return std::make_unique<AST::Constant>(value);
       }
-      throw SyntaxError("Invalid number literal");
     }
 
-    std::string identifier;
-    if (s >> identifier && std::isalpha(identifier[0])) {
+    /// <identifier> ::= <letter> | <letter><alphanumeric-sequence>
+    ///
+    /// <alphanumeric-sequence> ::= <letter> | <digit> |
+    ///   <letter><alphanumeric-sequence> | <digit><alphanumeric-sequence>
+    if (std::isalpha(c)) {
+      std::string identifier;
+      identifier += s.get();
+      while (std::isalnum(s.peek())) {
+        identifier += s.get();
+      }
       return std::make_unique<AST::Identifier>(identifier);
     }
 
-    throw SyntaxError(
-        std::format("Could not parse expression '{}'", identifier));
+    // reached the bottom of the recursive descend
+    throw SyntaxError(std::format("Character not allowed '{}'", c));
   }
 
 public:
