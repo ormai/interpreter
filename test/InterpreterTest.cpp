@@ -101,4 +101,17 @@ TEST(InterpreterTest, Negative) {
 
 TEST(InterpreterTest, Precedence) {
   Context context;
+  EXPECT_EQ(Parser::parse("3 * (18 - 26) ^ 2 * 4 --1")->interpret(context),
+            769);
+  EXPECT_EQ(
+      Parser::parse("128^5 + 1 + 2^3 - 3 * 4 / 1 - 128^5")->interpret(context),
+      -3);
+  EXPECT_EQ(
+      Parser::parse(
+          "(-5 + 2)^(3 - 1) - 3 ^ (1 + 2 - 7 * 2^5) * (128 - 5 ^ -(1 / 3))")
+          ->interpret(context),
+      9);
+  Parser::parse("z=y=x=12-5*2")->interpret(context);
+  EXPECT_EQ(Parser::parse("2*-12^(y*2)-25/11*1/z^5")->interpret(context),
+            41471.928977272728);
 }
