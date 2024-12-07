@@ -1,11 +1,12 @@
 #ifndef DIVIDE_EXPRESSION_HPP
 #define DIVIDE_EXPRESSION_HPP
 
+#include <format>
 #include <stdexcept>
 #include <string>
 
-#include "BinaryExpression.hpp"
 #include "../Color.hpp"
+#include "BinaryExpression.hpp"
 
 namespace AST {
 class DivideExpression final : public BinaryExpression {

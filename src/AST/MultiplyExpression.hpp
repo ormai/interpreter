@@ -19,8 +19,8 @@ public:
   }
 
   [[nodiscard]] std::string to_string() const override {
-    return std::format("{}({} {}* {}{}){}", Color::BLUE, op1->to_string(),
-                       Color::BLUE, op2->to_string(), Color::BLUE,
+    return std::format("{}({} {}* {}{}){}", Color::YELLOW, op1->to_string(),
+                       Color::YELLOW, op2->to_string(), Color::YELLOW,
                        Color::DEFAULT);
   }
 };
