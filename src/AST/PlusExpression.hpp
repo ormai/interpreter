@@ -20,8 +20,7 @@ public:
   }
 
   [[nodiscard]] std::string to_string() const override {
-    return std::format("{}(+{}{}){}", Color::RED, op->to_string(), Color::RED,
-                       Color::DEFAULT);
+    return std::format("{}(+{})", Color::DEFAULT, op->to_string());
   }
 };
 } // namespace AST

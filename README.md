@@ -5,7 +5,8 @@ This is a small C++ terminal application meant to implement a small language int
 ### Build
 
 > [!IMPORTANT]
-> [gtest](https://github.com/google/googletest) is required to test the project
+> [gtest](https://github.com/google/googletest) is required to test the project.
+> The package on Debian is `libgtest-dev`.
 
 ```sh
 # from the project root directory
@@ -26,7 +27,7 @@ Usage tips:
 - type `clear` to flush the terminal
 - variable assignment: `var = 1`
 - variable usage: `var + 2` (produces `3`)
-- supported operations are `+`, `-`, `*`, `+`, `^` (power)
+- supported operations are `+`, `-`, `*`, `/`, `^` (power)
 - number literals can be either integers or floating points
 
 [grammar.bnf](./grammar.bnf) contains a [Backus-Naur Form](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form) [grammar](https://en.wikipedia.org/wiki/Context-free_grammar) of the interpreted language.
