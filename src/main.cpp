@@ -1,6 +1,5 @@
 #include <iostream>
 #include <memory>
-#include <print>
 
 #include "AST/Expression.hpp"
 #include "Context.hpp"
@@ -11,23 +10,24 @@ int main() {
   Context context;
   std::string line;
   while (true) {
-    std::print("> ");
+    std::cout << "> ";
     std::getline(std::cin, line);
     if (line == "exit") {
-      std::println("Bye!");
+      std::cout << "Bye!" << std::endl;
       break;
     } else if (line == "clear") {
-      std::println("\033[H\033[2J");
+      std::cout << "\033[H\033[2J";
       continue;
     }
 
     try {
       if (!line.empty()) {
         const std::unique_ptr<AST::Expression> expr = Parser::parse(line);
-        std::println("{} = {}", expr->to_string(), expr->interpret(context));
+        std::cout << expr->to_string() << " = " << expr->interpret(context)
+                  << std::endl;
       }
     } catch (const std::exception &e) {
-      std::println(stderr, "{}", e.what());
+      std::cerr << e.what() << std::endl;
     }
   }
 }
