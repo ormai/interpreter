@@ -153,7 +153,7 @@ class Parser final {
     if (std::isalpha(c)) {
       std::string identifier;
       identifier += s.get();
-      while (std::isalnum(s.peek())) {
+      while (std::isalnum(s.peek()) || s.peek() == '_') {
         identifier += s.get();
       }
       return std::make_unique<AST::Identifier>(identifier);
