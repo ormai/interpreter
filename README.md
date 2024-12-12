@@ -1,6 +1,6 @@
 # Interpreter
 
-This is a small C++ terminal application meant to implement a small language interpreter for arithmetic expressions.
+This is a C++ terminal application meant to implement a language interpreter for arithmetic expressions.
 
 ### Build
 
