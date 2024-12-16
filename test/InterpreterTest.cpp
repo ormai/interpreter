@@ -49,6 +49,9 @@ TEST(InterpreterTest, Assignment) {
   EXPECT_EQ(Parser::parse("b")->interpret(context), 3);
   EXPECT_EQ(Parser::parse("c")->interpret(context), 3);
   EXPECT_EQ(Parser::parse("d")->interpret(context), 3);
+
+  // assignment to a non identifier expression
+  EXPECT_THROW(Parser::parse("2 ^ 2 = 1 + 1"), SyntaxError);
 }
 
 TEST(InterpreterTest, Addition) {

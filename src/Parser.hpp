@@ -3,7 +3,6 @@
 
 #include <cctype>
 #include <format>
-#include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -36,8 +35,10 @@ class Parser final {
     std::unique_ptr<AST::Expression> left = additive(s); // descend
 
     s >> std::ws;
-    const char op = s.peek();
-    if (op == '=') {
+    if (const char op = s.peek(); op == '=') {
+      if (dynamic_cast<AST::Identifier *>(left.get()) == nullptr) {
+        throw SyntaxError("Left hand side of assignment must be an identifier");
+      }
       s.get(); // consume '='
 
       // Assignment is right-associative, so we recurse on the right side
@@ -58,13 +59,12 @@ class Parser final {
 
   /// <additive-expression> ::= <multiplicative-expression>
   ///   | <additive-expression> "+" <multiplicative-expression>
-  ///   | <additive-expression> "-" <multiplicative-expression>
+  ///   | <additive-expression> "/" <multiplicative-expression>
   static std::unique_ptr<AST::Expression> additive(std::istringstream &s) {
     std::unique_ptr<AST::Expression> left = multiplicative(s);
     while (true) {
       s >> std::ws;
-      const char op = s.peek();
-      if (op == '+') {
+      if (const char op = s.peek(); op == '+') {
         s.get(); // consume '+'
         left = std::make_unique<AST::AddExpression>(std::move(left),
                                                     multiplicative(s));
@@ -86,8 +86,7 @@ class Parser final {
     std::unique_ptr<AST::Expression> left = exponential(s);
     while (true) {
       s >> std::ws;
-      const char op = s.peek();
-      if (op == '*') {
+      if (const char op = s.peek(); op == '*') {
         s.get(); // consume '*'
         left = std::make_unique<AST::MultiplyExpression>(std::move(left),
                                                          exponential(s));
@@ -106,8 +105,7 @@ class Parser final {
   static std::unique_ptr<AST::Expression> exponential(std::istringstream &s) {
     std::unique_ptr<AST::Expression> left = primary(s);
     s >> std::ws;
-    const char op = s.peek();
-    if (op == '^') {
+    if (const char op = s.peek(); op == '^') {
       s.get(); // consume '^'
       // right-associativity happens here, with recursion on the right op
       left = std::make_unique<AST::ExponentialExpression>(std::move(left),
@@ -146,10 +144,10 @@ class Parser final {
       }
     }
 
-    /// <identifier> ::= <letter> | <letter><alphanumeric-sequence>
-    ///
-    /// <alphanumeric-sequence> ::= <letter> | <digit> |
-    ///   <letter><alphanumeric-sequence> | <digit><alphanumeric-sequence>
+    // <identifier> ::= <letter> | <letter><alphanumeric-sequence>
+    //
+    // <alphanumeric-sequence> ::= <letter> | <digit> |
+    //   <letter><alphanumeric-sequence> | <digit><alphanumeric-sequence>
     if (std::isalpha(c)) {
       std::string identifier;
       identifier += s.get();
@@ -160,13 +158,13 @@ class Parser final {
     }
 
     // reached the bottom of the recursive descend
-    throw SyntaxError(std::format("Character not allowed '{}'", c));
+    throw SyntaxError(std::format("Unexpected character '{}'", c));
   }
 
 public:
   /// Mathematical expression parser
   ///
-  /// @param expression A string representing a mathematical expression
+  /// @param input A string representing a mathematical expression
   /// @return The abstract syntax tree representing the mathematical expression
   static std::unique_ptr<AST::Expression> parse(const std::string &input) {
     std::istringstream iss(input);

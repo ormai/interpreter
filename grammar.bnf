@@ -21,7 +21,7 @@
 
 <multiplicative-expression> ::= <exponential-expression>
   | <multiplicative-expression> "*" <exponential-expression>
-  | <multiplicative-expression> "-" <exponential-expression>
+  | <multiplicative-expression> "/" <exponential-expression>
 
 <exponential-expression> ::= <primary-expression>
   | <primary-expression> "^" <exponential-expression>

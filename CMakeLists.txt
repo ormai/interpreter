@@ -10,6 +10,7 @@ file(GLOB_RECURSE SOURCES "src/*.cpp")
 add_executable(${PROJECT_NAME} ${SOURCES}
         src/AST/AddExpression.hpp
         src/AST/Expression.hpp
+        src/AST/ExponentialExpression.hpp
         src/AST/BinaryExpression.hpp
         src/AST/Constant.hpp
         src/Context.hpp
@@ -23,10 +24,11 @@ add_executable(${PROJECT_NAME} ${SOURCES}
         src/AST/SubtractExpression.hpp
         src/AST/UnaryExpression.hpp
         src/Color.hpp
-        src/SyntaxError.hpp)
+        src/SyntaxError.hpp
+        src/main.cpp)
 
 # Include directories
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src )
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Enable warnings
 if (MSVC)
