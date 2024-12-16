@@ -16,7 +16,8 @@ int main() {
     if (line == "exit") {
       std::cout << "Bye!" << std::endl;
       break;
-    } else if (line == "clear") {
+    }
+    if (line == "clear") {
       std::cout << "\033[H\033[2J";
       continue;
     }
@@ -24,8 +25,9 @@ int main() {
     try {
       if (!line.empty()) {
         const std::unique_ptr<AST::Expression> expr = Parser::parse(line);
+        const double res = expr->interpret(context); // do it before to_string()
         std::cout << expr->to_string() << Color::GREY << " = " << Color::MAGENTA
-                  << expr->interpret(context) << Color::DEFAULT << std::endl;
+                  << res << Color::DEFAULT << std::endl;
       }
     } catch (const std::exception &e) {
       std::cerr << e.what() << std::endl;
