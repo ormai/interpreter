@@ -4,14 +4,14 @@
 #include "../src/Parser.hpp"
 #include "../src/SyntaxError.hpp"
 
-TEST(InterpreterTest, InvalidExpressions) {
+TEST(ParserTest, InvalidExpressions) {
   Context context;
   EXPECT_THROW(Parser::parse("1 + 5 abc")->interpret(context), SyntaxError);
   EXPECT_THROW(Parser::parse("a = 5 + 58 b = 35 - 4")->interpret(context),
                SyntaxError);
 }
 
-TEST(InterpreterTest, WhitespaceAgnostic) {
+TEST(ParserTest, WhitespaceAgnostic) {
   Context context;
   EXPECT_EQ(Parser::parse("1+1")->interpret(context), 2);
   EXPECT_EQ(Parser::parse(" 1+1")->interpret(context), 2);
@@ -21,7 +21,7 @@ TEST(InterpreterTest, WhitespaceAgnostic) {
   EXPECT_EQ(Parser::parse("1    -   1")->interpret(context), 0);
 }
 
-TEST(InterpreterTest, Parenthesis) {
+TEST(ParserTest, Parenthesis) {
   Context context;
   EXPECT_THROW(Parser::parse("()")->interpret(context), SyntaxError);
   EXPECT_NO_THROW(Parser::parse("((((((((((1))))))))))")->interpret(context));
@@ -33,7 +33,7 @@ TEST(InterpreterTest, Parenthesis) {
                       ->interpret(context));
 }
 
-TEST(InterpreterTest, Assignment) {
+TEST(ParserTest, Assignment) {
   Context context;
   EXPECT_EQ(Parser::parse("a = 1 + 1")->interpret(context), 2);
   EXPECT_EQ(Parser::parse("a")->interpret(context), 2);
@@ -54,24 +54,24 @@ TEST(InterpreterTest, Assignment) {
   EXPECT_THROW(Parser::parse("2 ^ 2 = 1 + 1"), SyntaxError);
 }
 
-TEST(InterpreterTest, Addition) {
+TEST(ParserTest, Addition) {
   Context context;
   EXPECT_EQ(Parser::parse("5 + 3")->interpret(context), 8);
   EXPECT_THROW(Parser::parse("+")->interpret(context), SyntaxError);
   EXPECT_THROW(Parser::parse("1 +")->interpret(context), SyntaxError);
 }
 
-TEST(InterpreterTest, Subtraction) {
+TEST(ParserTest, Subtraction) {
   Context context;
   EXPECT_EQ(Parser::parse("258 - 412")->interpret(context), -154);
 }
 
-TEST(InterpreterTest, Multiplication) {
+TEST(ParserTest, Multiplication) {
   Context context;
   EXPECT_EQ(Parser::parse("4294967296 * 5")->interpret(context), 21474836480);
 }
 
-TEST(InterpreterTest, Division) {
+TEST(ParserTest, Division) {
   Context context;
   EXPECT_EQ(Parser::parse("-5 / -2")->interpret(context), 2.5);
 
@@ -79,7 +79,7 @@ TEST(InterpreterTest, Division) {
   EXPECT_THROW(Parser::parse("1 / 0")->interpret(context), std::domain_error);
 }
 
-TEST(InterpreterTest, Exponential) {
+TEST(ParserTest, Exponential) {
   Context context;
   EXPECT_EQ(Parser::parse("2 ^ 5")->interpret(context), 32);
 
@@ -87,14 +87,14 @@ TEST(InterpreterTest, Exponential) {
   EXPECT_EQ(Parser::parse("4 ^ 3 ^ 2")->interpret(context), 262144);
 }
 
-TEST(InterpreterTest, Positive) {
+TEST(ParserTest, Positive) {
   Context context;
   EXPECT_EQ(Parser::parse("+379")->interpret(context), 379);
   EXPECT_EQ(Parser::parse("+-1")->interpret(context), -1);
   EXPECT_EQ(Parser::parse("++++++++++++++++++1")->interpret(context), 1);
 }
 
-TEST(InterpreterTest, Negative) {
+TEST(ParserTest, Negative) {
   Context context;
   EXPECT_EQ(Parser::parse("-1")->interpret(context), -1);
   EXPECT_EQ(Parser::parse("--1")->interpret(context), 1);
@@ -102,7 +102,7 @@ TEST(InterpreterTest, Negative) {
   EXPECT_EQ(Parser::parse("----1")->interpret(context), 1);
 }
 
-TEST(InterpreterTest, Precedence) {
+TEST(ParserTest, Precedence) {
   Context context;
   EXPECT_EQ(Parser::parse("3 * (18 - 26) ^ 2 * 4 --1")->interpret(context),
             769);

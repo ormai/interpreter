@@ -27,7 +27,6 @@ add_executable(${PROJECT_NAME} ${SOURCES}
         src/SyntaxError.hpp
         src/main.cpp)
 
-# Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Enable warnings
@@ -40,9 +39,9 @@ endif ()
 # Test
 find_package(GTest REQUIRED)
 
-add_executable(InterpreterTest test/InterpreterTest.cpp)
-target_link_libraries(InterpreterTest GTest::GTest GTest::Main)
+add_executable(tests test/Parser.cpp)
+target_link_libraries(tests GTest::GTest GTest::Main)
 
-add_test(Interpreter InterpreterTest COMMAND $<TARGET_FILE:InterpreterTest>)
+add_test(interpreter tests COMMAND $<TARGET_FILE:tests>)
 
 enable_testing()
